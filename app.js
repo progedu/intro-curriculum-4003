@@ -9,8 +9,8 @@ var session = require('express-session');
 var passport = require('passport');
 var GitHubStrategy = require('passport-github2').Strategy;
 
-var GITHUB_CLIENT_ID = 'f756acb8748f85e2014b';
-var GITHUB_CLIENT_SECRET = '0fc57f6660bd5da78873eeacda8c131859b64f30';
+var GITHUB_CLIENT_ID = '0de9c4de440edc3aba70';
+var GITHUB_CLIENT_SECRET = '232994ac6de5e6c26476f4e062f1e1455b7a9962';
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -30,7 +30,7 @@ passport.use(new GitHubStrategy({
       return done(null, profile);
     });
   }
-  ));
+))
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -56,7 +56,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/users', ensureAuthenticated, users);
 app.use('/photos', photos);
 
 app.get('/auth/github',
@@ -71,7 +71,7 @@ app.get('/auth/github/callback',
   });
 
 app.get('/login', function (req, res) {
-  res.render('login', { user: req.user });
+  res.render('login');
 });
 
 app.get('/logout', function (req, res) {
@@ -79,8 +79,13 @@ app.get('/logout', function (req, res) {
   res.redirect('/');
 });
 
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
+
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
@@ -91,7 +96,7 @@ app.use(function(req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
+  app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
       message: err.message,
@@ -102,7 +107,7 @@ if (app.get('env') === 'development') {
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,
