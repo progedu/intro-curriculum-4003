@@ -21,15 +21,15 @@ passport.deserializeUser(function (obj, done) {
 });
 
 passport.use(new GitHubStrategy({
-        clientID: GITHUB_CLIENT_ID,
-        clientSecret: GITHUB_CLIENT_SECRET,
-        callbackURL: 'http://localhost:8000/auth/github/callback'
-    },
-    function (accessToken, refreshToken, profile, done) {
-        process.nextTick(function () {
-            return done(null, profile);
-        });
-    }
+    clientID: GITHUB_CLIENT_ID,
+    clientSecret: GITHUB_CLIENT_SECRET,
+    callbackURL: 'http://localhost:8000/auth/github/callback'
+},
+function (accessToken, refreshToken, profile, done) {
+    process.nextTick(function () {
+        return done(null, profile);
+    });
+}
 ));
 
 var routes = require('./routes/index');
