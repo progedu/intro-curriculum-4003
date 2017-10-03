@@ -56,7 +56,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/users',ensureAuthenticated, users);
 app.use('/photos', photos);
 
 app.get('/auth/github',
@@ -69,6 +69,11 @@ app.get('/auth/github/callback',
   function (req, res) {
     res.redirect('/');
   });
+
+  function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) { return next(); }
+    res.redirect('/login');
+  }
 
 app.get('/login', function (req, res) {
   res.render('login', { user: req.user });
