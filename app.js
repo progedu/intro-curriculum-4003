@@ -32,6 +32,11 @@ passport.use(new GitHubStrategy({
   }
   ));
 
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) { return next(); }
+    res.redirect('/login');
+}
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var photos = require('./routes/photos');
@@ -56,8 +61,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/users',ensureAuthenticated, users);
 app.use('/photos', photos);
+
 
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
@@ -70,6 +76,8 @@ app.get('/auth/github/callback',
     res.redirect('/');
   });
 
+
+
 app.get('/login', function (req, res) {
   res.render('login', { user: req.user });
 });
@@ -78,6 +86,8 @@ app.get('/logout', function (req, res) {
   req.logout();
   res.redirect('/');
 });
+
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
