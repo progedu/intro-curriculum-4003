@@ -56,13 +56,19 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', routes);
-app.use('/users', users);
+// app.use('/users', users);
 app.use('/photos', photos);
+app.use('/users', ensureAuthenticated, users);
 
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
   function (req, res) {
   });
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login'); 
+}
 
 app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login' }),
