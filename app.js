@@ -70,6 +70,13 @@ app.get('/auth/github/callback',
     res.redirect('/');
   });
 
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
+
+app.use('/users',ensureAuthenticated(),users);
+
 app.get('/login', function (req, res) {
   res.render('login', { user: req.user });
 });
@@ -85,6 +92,8 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
+
+
 
 // error handlers
 
