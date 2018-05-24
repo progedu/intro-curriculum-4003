@@ -32,7 +32,7 @@ passport.use(new GitHubStrategy({
   }
   ));
 
-var routes = require('./routes/index');
+var index = require('./routes/index');
 var users = require('./routes/users');
 var photos = require('./routes/photos');
 
@@ -55,7 +55,7 @@ app.use(session({ secret: '417cce55dcfcfaeb', resave: false, saveUninitialized: 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/', routes);
+app.use('/', index);
 app.use('/users', users);
 app.use('/photos', photos);
 
