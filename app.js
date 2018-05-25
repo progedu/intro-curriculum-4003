@@ -32,6 +32,11 @@ passport.use(new GitHubStrategy({
   }
   ));
 
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var photos = require('./routes/photos');
@@ -109,10 +114,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  res.redirect('/login');
-}
 
 module.exports = app;
