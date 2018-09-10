@@ -56,7 +56,12 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', routes);
-app.use('/users', users);
+/*
+  関数の第一引数にはパス、第二引数に ensureAuthenticated 関数、
+  第三引数に Router オブジェクトを渡して呼び出すことで、
+  そのパスへのアクセスに認証が必要となるような動作をするようになる
+*/
+app.use('/users', ensureAuthenticated, users);
 app.use('/photos', photos);
 
 app.get('/auth/github',
@@ -78,6 +83,11 @@ app.get('/logout', function (req, res) {
   req.logout();
   res.redirect('/');
 });
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
