@@ -56,7 +56,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', index);
-app.use('/users', users);
+app.use('/users', (req, res, next) => {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}, users);
 app.use('/photos', photos);
 
 app.get('/auth/github',
