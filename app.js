@@ -9,8 +9,8 @@ var session = require('express-session');
 var passport = require('passport');
 var GitHubStrategy = require('passport-github2').Strategy;
 
-var GITHUB_CLIENT_ID = 'f756acb8748f85e2014b';
-var GITHUB_CLIENT_SECRET = '0fc57f6660bd5da78873eeacda8c131859b64f30';
+var GITHUB_CLIENT_ID = '8cc01dfd75aa56bb6719';
+var GITHUB_CLIENT_SECRET = 'c0446f9a1163da5178c86f0c914bc58eecf90b16';
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -56,8 +56,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', index);
-app.use('/users', users);
 app.use('/photos', photos);
+app.use('/users', ensureAuthenticated, users);
 
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
@@ -78,6 +78,11 @@ app.get('/logout', function (req, res) {
   req.logout();
   res.redirect('/');
 });
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
