@@ -57,7 +57,7 @@ app.use(passport.session());
 
 app.use('/', index);
 app.use('/users', ensureAuthenticated, users);
-app.use('/photos', photos);
+app.use('/photos', ensureAuthenticated, photos);
 
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
@@ -79,7 +79,7 @@ app.get('/logout', function (req, res) {
   res.redirect('/');
 });
 
-// '/user'ページの認証必要
+// '/user'と'/photos'ページの認証必要
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   res.redirect('/login');
