@@ -12,6 +12,11 @@ var GitHubStrategy = require('passport-github2').Strategy;
 var GITHUB_CLIENT_ID = 'f756acb8748f85e2014b';
 var GITHUB_CLIENT_SECRET = '0fc57f6660bd5da78873eeacda8c131859b64f30';
 
+function ensureAuthenticated(req, res, next){
+  if(req.isAuthenticated()){return next();}
+  res.redirect('/login');
+}
+
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
@@ -56,7 +61,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', index);
-app.use('/users', users);
+app.use('/users', ensureAuthenticated, users);
 app.use('/photos', photos);
 
 app.get('/auth/github',
