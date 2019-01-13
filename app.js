@@ -9,8 +9,8 @@ var session = require('express-session');
 var passport = require('passport');
 var GitHubStrategy = require('passport-github2').Strategy;
 
-var GITHUB_CLIENT_ID = 'f756acb8748f85e2014b';
-var GITHUB_CLIENT_SECRET = '0fc57f6660bd5da78873eeacda8c131859b64f30';
+var GITHUB_CLIENT_ID = 'c27d381c5761cac48c32';
+var GITHUB_CLIENT_SECRET = 'aa192f1e7df3ef076d861bc573aeb0e4d4afc0a2';
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -23,7 +23,7 @@ passport.deserializeUser(function (obj, done) {
 passport.use(new GitHubStrategy({
   clientID: GITHUB_CLIENT_ID,
   clientSecret: GITHUB_CLIENT_SECRET,
-  callbackURL: 'http://localhost:8000/auth/github/callback'
+  callbackURL: `http://localhost:8001/auth/github/callback`
 },
   function (accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
@@ -56,7 +56,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', index);
-app.use('/users', users);
+app.use('/users', ensureAuthenticated, users);
 app.use('/photos', photos);
 
 app.get('/auth/github',
@@ -97,4 +97,8 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
 module.exports = app;
