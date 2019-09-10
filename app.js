@@ -4,12 +4,13 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var helmet = require('helmet');
+
 var session = require('express-session');
 var passport = require('passport');
 var GitHubStrategy = require('passport-github2').Strategy;
 
-var GITHUB_CLIENT_ID = 'f756acb8748f85e2014b';
-var GITHUB_CLIENT_SECRET = '0fc57f6660bd5da78873eeacda8c131859b64f30';
+var GITHUB_CLIENT_ID = '9f0f1549dc4c61fb671f';
+var GITHUB_CLIENT_SECRET = 'b6c99afde6b3a55723c4ce058a3709384910edd1';
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -23,7 +24,7 @@ passport.use(new GitHubStrategy({
   clientID: GITHUB_CLIENT_ID,
   clientSecret: GITHUB_CLIENT_SECRET,
   callbackURL: 'http://localhost:8000/auth/github/callback'
-},
+}, 
   function (accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
       return done(null, profile);
@@ -48,33 +49,39 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({ secret: '417cce55dcfcfaeb', resave: false, saveUninitialized: false }));
+app.use(session({ secret: '5ba0854ea8708996', resave: false, saveUninitialized: false}));
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/users', ensureAuthenticated, usersRouter);
 app.use('/photos', photosRouter);
 
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
   function (req, res) {
-  });
+});
 
 app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login' }),
   function (req, res) {
-    res.redirect('/');
-  });
+    res.redirect('/')
+  }
+);
 
-app.get('/login', function (req, res) {
+app.get('/login', function(req, res) {
   res.render('login');
 });
 
-app.get('/logout', function (req, res) {
+app.get('/logout', function(req, res) {
   req.logout();
   res.redirect('/');
 });
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('login')
+}
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
