@@ -52,8 +52,9 @@ app.use(session({ secret: '417cce55dcfcfaeb', resave: false, saveUninitialized: 
 app.use(passport.initialize());
 app.use(passport.session());
 
+
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/users', ensureAuthenticated , usersRouter);
 app.use('/photos', photosRouter);
 
 app.get('/auth/github',
@@ -93,3 +94,8 @@ app.use(function (err, req, res, next) {
 });
 
 module.exports = app;
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()){ return next(); }
+  res.redirect('/login');
+}
