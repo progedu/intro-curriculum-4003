@@ -53,8 +53,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/photos', photosRouter);
+app.use('/users', ensureAuthenticated, usersRouter);
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
 
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
