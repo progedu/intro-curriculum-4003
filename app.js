@@ -1,3 +1,9 @@
+// 先ほど実装した認証機能を使って、 /users は認証が完了していないと見れないようにしましょう。
+// 認証されていない場合には、 /login にリダイレクトすることにします。
+
+// Router オブジェクトを登録する app.use 関数の第一引数にはパス、 
+// 第二引数に ensureAuthenticated 関数、第三引数に Router オブジェクトを 渡して呼び出すことで、
+// そのパスへのアクセスに認証が必要となるような動作をするようになります。
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -31,6 +37,12 @@ passport.use(new GitHubStrategy({
   }
 ));
 
+//追記
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var photosRouter = require('./routes/photos');
@@ -53,7 +65,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/users', ensureAuthenticated,　usersRouter);//変更
 app.use('/photos', photosRouter);
 
 app.get('/auth/github',
