@@ -20,10 +20,10 @@ passport.deserializeUser(function (obj, done) {
 });
 
 passport.use(new GitHubStrategy({
-  clientID: GITHUB_CLIENT_ID,
-  clientSecret: GITHUB_CLIENT_SECRET,
-  callbackURL: 'http://localhost:8000/auth/github/callback'
-},
+    clientID: GITHUB_CLIENT_ID,
+    clientSecret: GITHUB_CLIENT_SECRET,
+    callbackURL: 'http://localhost:8000/auth/github/callback'
+  },
   function (accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
       return done(null, profile);
@@ -44,25 +44,34 @@ app.set('view engine', 'pug');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({
+  extended: false
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({ secret: '417cce55dcfcfaeb', resave: false, saveUninitialized: false }));
+app.use(session({
+  secret: '417cce55dcfcfaeb',
+  resave: false,
+  saveUninitialized: false
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/users', ensureAuthenticated, usersRouter);
 app.use('/photos', photosRouter);
 
 app.get('/auth/github',
-  passport.authenticate('github', { scope: ['user:email'] }),
-  function (req, res) {
-  });
+  passport.authenticate('github', {
+    scope: ['user:email']
+  }),
+  function (req, res) {});
 
 app.get('/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: '/login' }),
+  passport.authenticate('github', {
+    failureRedirect: '/login'
+  }),
   function (req, res) {
     res.redirect('/');
   });
@@ -75,6 +84,14 @@ app.get('/logout', function (req, res) {
   req.logout();
   res.redirect('/');
 });
+
+//ここに実装
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+}
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
