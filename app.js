@@ -53,7 +53,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+
+// 認証済みでないと/usersへ遷移しないように実装
+app.use('/users', ensureAuthenticated, usersRouter);
 app.use('/photos', photosRouter);
 
 app.get('/auth/github',
@@ -91,5 +93,13 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+// 練習問題追加分の関数
+function ensureAuthenticated(req, res, next) {
+  // 認証されていれば/usersへ遷移
+  if (req.isAuthenticated()) { return next(); }
+  // 認証されてなければ/loginへリダイレクト
+  res.redirect('/login');
+}
 
 module.exports = app;
