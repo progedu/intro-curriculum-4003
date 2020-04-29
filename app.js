@@ -1,16 +1,15 @@
+var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var logger = require('morgan');
 var helmet = require('helmet');
 var session = require('express-session');
 var passport = require('passport');
 var GitHubStrategy = require('passport-github2').Strategy;
 
-var GITHUB_CLIENT_ID = 'f756acb8748f85e2014b';
-var GITHUB_CLIENT_SECRET = '0fc57f6660bd5da78873eeacda8c131859b64f30';
+var GITHUB_CLIENT_ID = '8b675b28fec0215c67d2';
+var GITHUB_CLIENT_SECRET = 'ac79b5b6156d129280d58dba70b3f0adc02b6314';
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -30,48 +29,47 @@ passport.use(new GitHubStrategy({
       return done(null, profile);
     });
   }
-  ));
+));
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
-var photos = require('./routes/photos');
+
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+var photosRouter = require('./routes/photos');
 
 var app = express();
 app.use(helmet());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({ secret: '417cce55dcfcfaeb', resave: false, saveUninitialized: false }));
+app.use(session({ secret: 'e8d9d2b67bc679ed', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/', routes);
-app.use('/users', users);
-app.use('/photos', photos);
+app.use('/', indexRouter);
+app.use('/users', ensureAuthenticated, usersRouter);
+app.use('/photos', photosRouter);
 
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
   function (req, res) {
-  });
+});
 
 app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login' }),
   function (req, res) {
     res.redirect('/');
-  });
+});
 
 app.get('/login', function (req, res) {
-  res.render('login', { user: req.user });
+    res.render('login');
 });
 
 app.get('/logout', function (req, res) {
@@ -79,36 +77,25 @@ app.get('/logout', function (req, res) {
   res.redirect('/');
 });
 
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) { return next(); }
+    res.redirect('/login');
+  }
+
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+app.use(function (req, res, next) {
+  next(createError(404));
 });
 
-// error handlers
+// error handler
+app.use(function (err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
-  });
-}
-
-// production error handler
-// no stacktraces leaked to user
-app.use(function(err, req, res, next) {
+  // render the error page
   res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
+  res.render('error');
 });
-
 
 module.exports = app;
