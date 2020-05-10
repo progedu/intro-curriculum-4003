@@ -8,8 +8,8 @@ var session = require('express-session');
 var passport = require('passport');
 var GitHubStrategy = require('passport-github2').Strategy;
 
-var GITHUB_CLIENT_ID = 'f756acb8748f85e2014b';
-var GITHUB_CLIENT_SECRET = '0fc57f6660bd5da78873eeacda8c131859b64f30';
+var GITHUB_CLIENT_ID = '8cdd362d0a998cd185d8';
+var GITHUB_CLIENT_SECRET = '92e9b42f1c3fdf97c2e0900c0c27117d069e5f75';
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -48,13 +48,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({ secret: '417cce55dcfcfaeb', resave: false, saveUninitialized: false }));
+app.use(session({ secret: 'b8a46aa729581985', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/users', ensureAuthenticated, usersRouter);
 app.use('/photos', photosRouter);
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
 
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
