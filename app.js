@@ -50,7 +50,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({ secret: '417cce55dcfcfaeb', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -75,6 +74,11 @@ app.get('/logout', function (req, res) {
   req.logout();
   res.redirect('/');
 });
+
+function ensureAuthenticated(req, res, next) {
+  if(req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
