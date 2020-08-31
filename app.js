@@ -1,3 +1,4 @@
+/** 各種必要なライブラリをインポートする */
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -11,6 +12,7 @@ var GitHubStrategy = require('passport-github2').Strategy;
 var GITHUB_CLIENT_ID = 'f756acb8748f85e2014b';
 var GITHUB_CLIENT_SECRET = '0fc57f6660bd5da78873eeacda8c131859b64f30';
 
+/** passportの設定 */
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
@@ -31,10 +33,14 @@ passport.use(new GitHubStrategy({
   }
 ));
 
+
+/** Routerオブジェクトを登録 */
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var photosRouter = require('./routes/photos');
 
+
+/** アプリケーションの設定 */
 var app = express();
 app.use(helmet());
 
@@ -48,29 +54,44 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+function ensureAuthenticated(req, res, next) {
+  if(req.isAuthenticated()) {
+    return next();
+  };
+  res.redirect('/login');
+};
+
 app.use(session({ secret: '417cce55dcfcfaeb', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+
+/** Routerオブジェクトがどのパスに当たるかを定義 */
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/users', ensureAuthenticated, usersRouter);
 app.use('/photos', photosRouter);
 
+
+/** passportを用いてgithubの登録ユーザー情報を得る */
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
   function (req, res) {
   });
 
+// 認証に失敗したら /login にリダイレクトさせる
 app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login' }),
   function (req, res) {
     res.redirect('/');
-  });
+  }
+  );
 
+// ログインの時のハンドリング
 app.get('/login', function (req, res) {
   res.render('login');
 });
 
+// ログアウトの時のハンドリング
 app.get('/logout', function (req, res) {
   req.logout();
   res.redirect('/');
