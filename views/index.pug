@@ -3,6 +3,7 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
+  p 認証していないと見る事はできません。
   if user
     p Hello, #{user.username}
     a(href="/logout") Logout
