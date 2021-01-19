@@ -1,13 +1,12 @@
+var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var logger = require('morgan');
 var helmet = require('helmet');
-var session = require('express-session');
-var passport = require('passport');
-var GitHubStrategy = require('passport-github2').Strategy;
+const session = require('express-session');
+const passport = require('passport');
+const GitHubStrategy = require('passport-github2').Strategy;
 const dotenv = require('dotenv').config();//環境変数を.envファイルから読みだすモジュールを呼び出し
 const env = process.env;
 
@@ -55,7 +54,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/users', ensureAuthenticated, users);
 app.use('/photos', photos);
 
 app.get('/auth/github',
@@ -77,6 +76,11 @@ app.get('/logout', function (req, res) {
   req.logout();
   res.redirect('/');
 });
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+}
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
