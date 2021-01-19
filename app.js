@@ -52,9 +52,17 @@ app.use(session({ secret: '417cce55dcfcfaeb', resave: false, saveUninitialized: 
 app.use(passport.initialize());
 app.use(passport.session());
 
+// 認証がされているかのチェック　認証されていなければログインページへリダイレクトする
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/photos', photosRouter);
+app.use('/users', ensureAuthenticated, usersRouter);
+app.use('/photos', ensureAuthenticated, photosRouter);
 
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
