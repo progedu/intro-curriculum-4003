@@ -10,7 +10,9 @@ var session = require('express-session');
 var passport = require('passport');
 var GitHubStrategy = require('passport-github2').Strategy;
 
+// github がアプリケーションに割り当てた ID
 var GITHUB_CLIENT_ID = 'e107dd047e1974b25443';
+// アプリケーションの持ち主であることを確かめるための秘密鍵。公開してはいけない
 var GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 
 passport.serializeUser(function (user, done) {
@@ -58,11 +60,13 @@ app.use('/', indexRouter);
 app.use('/users', ensureAuthenticated, usersRouter);
 app.use('/photos', photosRouter);
 
+// github ログインをするための url
 app.get('/auth/github',
   passport.authenticate('github', { scope: ['user:email'] }),
   function (req, res) {
   });
 
+// github でログインをしたあとに帰ってくる url
 app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login' }),
   function (req, res) {
@@ -78,6 +82,10 @@ app.get('/logout', function (req, res) {
   res.redirect('/');
 });
 
+// 60行目の app.use('/users', ensureAuthenticated, usersRouter);
+// ensureAuthenticated を実行してから usersRouter が実行される
+// 第3引数の usersRouter が next にはいってくる
+// isAuthenticated() が true じゃないと usersRouter の処理に入っていかないというかんじ
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
