@@ -3,8 +3,10 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
+  a(href="/users") Users
+  br
   if user
-    p Hello, #{user.username}
+    p Hello, <img height="15" width="15" src="#{user._json.avatar_url}"> #{user.username}
     a(href="/logout") Logout
   else
     a(href="/login") Login

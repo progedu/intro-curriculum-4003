@@ -77,9 +77,9 @@ app.get('/logout', function (req, res) {
   res.redirect('/');
 });
 
-function ensureAuthenticated(req,res,next){
-  if(req.isAuthenticated()){return next();}
-  res.redirect('/login');
+function ensureAuthenticated(req,res,next){//認証されているのかどうか
+  if(req.isAuthenticated()){return next();}//認証されていたらok
+  res.redirect('/login');//認証されていないならloginページへ
 }
 
 // catch 404 and forward to error handler
