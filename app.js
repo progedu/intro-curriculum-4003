@@ -53,7 +53,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/users', ensureAuthenticated, usersRouter); // ここ追加
 app.use('/photos', photosRouter);
 
 app.get('/auth/github',
@@ -75,6 +75,14 @@ app.get('/logout', function (req, res) {
   req.logout();
   res.redirect('/');
 });
+
+// 関数追加
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+};
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
