@@ -53,7 +53,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/users', ensureAuthenticated, usersRouter);
 app.use('/photos', photosRouter);
 
 app.get('/auth/github',
@@ -80,6 +80,13 @@ app.get('/logout', function (req, res) {
 app.use(function (req, res, next) {
   next(createError(404));
 });
+
+function ensureAuthenticated(req,res,next){
+  if(req.isAuthenticated()){
+    return next();
+  }
+  res.redirect('/login');
+}
 
 // error handler
 app.use(function (err, req, res, next) {
